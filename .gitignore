@@ -4,6 +4,7 @@
 stanford*
 
 # Compiled class file
+target/
 *.class
 
 # Log file
