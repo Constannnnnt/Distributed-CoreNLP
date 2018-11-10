@@ -34,3 +34,5 @@ hs_err_pid*
 .idea/scala_compiler.xml
 .idea/vcs.xml
 .idea/workspace.xml
+.idea/hydra.xml
+.idea/hydra.xml
