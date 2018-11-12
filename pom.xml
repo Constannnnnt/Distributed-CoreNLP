@@ -3,12 +3,12 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>ca.uwaterloo.cs451</groupId>
+  <groupId>ca.uwaterloo.cs651</groupId>
   <artifactId>project</artifactId>
   <packaging>jar</packaging>
   <version>1.0</version>
-  <description>Assignments for CS 451 Data-Intensive Distributed Computing (Fall 2018) at the University of Waterloo</description>
-  <url>https://lintool.github.io/bigdata-2018f/</url>
+  <description>Project for CS 651 Data-Intensive Distributed Computing (Fall 2018) at the University of Waterloo</description>
+  <url>https://github.com/Constannnnnt/Spark-CoreNLP</url>
 
   <repositories>
     <repository>
@@ -86,6 +86,7 @@
           <scalaVersion>${scala.version}</scalaVersion>
         </configuration>
       </plugin>
+      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

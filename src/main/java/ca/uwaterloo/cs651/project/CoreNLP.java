@@ -23,16 +23,7 @@ import java.util.regex.Pattern;
 
 public class CoreNLP {
     private static final Logger LOG = Logger.getLogger(CoreNLP.class);
-    private static final class Args {
-        @Option(name = "-input", metaVar = "[path]", required = true, usage = "input path")
-        String input;
-
-        @Option(name = "-output", metaVar = "[path]", usage = "output path")
-        String output;
-
-        @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
-        int numReducers = 1;
-    }
+    
     
     public static void main(String[] args) { 
         // Create a document. No computation is done yet.
