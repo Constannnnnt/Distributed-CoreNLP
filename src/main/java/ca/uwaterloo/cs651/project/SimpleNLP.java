@@ -105,7 +105,7 @@ public class SimpleNLP {
             }
             case "depparse": {
                 JavaRDD<String> parse = sents
-                    .map(sent -> sent.parse().toString());
+                    .map(sent -> sent.governor(0).toString());
                 parse.saveAsTextFile(_args.output+"/depparse");
                 break;
             }
