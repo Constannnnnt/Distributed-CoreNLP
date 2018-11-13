@@ -42,7 +42,7 @@ public class CoreNLP {
 
         SparkSession spark = SparkSession
           .builder()
-          .appName("SimpleNLP")
+          .appName("CoreNLP")
           .config("spark.hadoop.validateOutputSpecs", "false")
           .getOrCreate();
 
