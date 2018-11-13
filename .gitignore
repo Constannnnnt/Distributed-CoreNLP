@@ -36,3 +36,5 @@ hs_err_pid*
 .idea/workspace.xml
 .idea/hydra.xml
 .idea/hydra.xml
+
+output

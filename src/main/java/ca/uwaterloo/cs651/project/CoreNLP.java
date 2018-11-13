@@ -11,6 +11,8 @@ import edu.stanford.nlp.util.Quadruple;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 import org.apache.log4j.Logger;
+import org.apache.spark.broadcast.*;
+// import org.apache.spark.broadcast.Broadcast;
 import org.kohsuke.args4j.*;
 
 import java.util.Properties;
@@ -38,23 +40,23 @@ public class CoreNLP {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner");
         props.setProperty("ner.useSUTime", "false");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
         SparkSession spark = SparkSession
           .builder()
           .appName("CoreNLP")
           .config("spark.hadoop.validateOutputSpecs", "false")
           .getOrCreate();
-
+	
+	Broadcast<Properties> propsVar = spark.sparkContext().broadcast(props, scala.reflect.ClassTag$.MODULE$.apply(Properties.class));
         JavaRDD<String> lines = spark.read().textFile(_args.input).javaRDD();
         JavaRDD<CoreDocument> docs = lines.map(line -> new CoreDocument(line));
 
         docs.map(doc -> {
+            StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
             pipeline.annotate(doc);
-            return doc.tokens().stream()
-                .map(token -> "("+token.word()+","+token.ner()+")").collect(Collectors.joining(" "));
+            return doc.tokens().stream().map(token -> "("+token.word()+","+token.ner()+")").collect(Collectors.joining(" "));
         })
-            .saveAsTextFile(_args.output);
+        .saveAsTextFile(_args.output);
 
         spark.stop();
 
