@@ -32,8 +32,8 @@ public class CoreNLP {
         }
 
         LOG.info("Tool: " + CoreNLP.class.getSimpleName());
-        LOG.info(" - input path: " + _args.input);
-        LOG.info(" - output path: " + _args.output);
+        LOG.info("input path: " + _args.input);
+        LOG.info("output path: " + _args.output);
 
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner");
