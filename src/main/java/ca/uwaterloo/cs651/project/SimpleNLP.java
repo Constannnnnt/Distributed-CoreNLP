@@ -23,7 +23,7 @@ public class SimpleNLP {
     private static final Set availFuncDoc = new TreeSet<String>();
 
     private static void buildAvailFunc() {
-        availFuncSent.add("tokenization");
+        availFuncSent.add("tokenize");
         availFuncSent.add("pos");
         availFuncSent.add("lemma");
         availFuncSent.add("ner");
@@ -38,7 +38,8 @@ public class SimpleNLP {
 
     public static void main(String[] args) throws IllegalArgumentException { 
         final Args _args = new Args();
-        CmdLineParser parser = new CmdLineParser(_args, ParserProperties.defaults().withUsageWidth(100));
+        CmdLineParser parser = new CmdLineParser(
+            _args, ParserProperties.defaults().withUsageWidth(100));
 
         try {
             parser.parseArgument(args);
@@ -103,7 +104,7 @@ public class SimpleNLP {
                 parse.saveAsTextFile(_args.output+"/parse");
                 break;
             }
-            case "depparse": {
+            case "depparse": {//?????????????
                 JavaRDD<String> parse = sents
                     .map(sent -> sent.governor(0).toString());
                 parse.saveAsTextFile(_args.output+"/depparse");
@@ -128,7 +129,7 @@ public class SimpleNLP {
                 doc_sents.saveAsTextFile(_args.output+"/ssplit");
                 break;
             }
-            case "dcoref": {
+            case "dcoref": {//?????????????
                 JavaRDD<Map<Integer,CorefChain>> coref = docs
                     .map(doc -> doc.coref());
                 coref.saveAsTextFile(_args.output+"/dcoref");
