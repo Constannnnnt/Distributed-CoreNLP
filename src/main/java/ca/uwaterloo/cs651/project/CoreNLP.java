@@ -7,8 +7,11 @@ import edu.stanford.nlp.pipeline.CoreNLPProtos.Sentiment;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.simple.*;
 import edu.stanford.nlp.util.Quadruple;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.CoreAnnotations;
 
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.*;
+import org.apache.spark.api.java.function.*;
 import org.apache.spark.sql.SparkSession;
 import org.apache.log4j.Logger;
 import org.apache.spark.broadcast.*;
@@ -19,6 +22,8 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+
+import scala.Tuple2;
 
 public class CoreNLP {
     private static final Logger LOG = Logger.getLogger(CoreNLP.class);
@@ -73,7 +78,7 @@ public class CoreNLP {
         depChain.put("coref", temp);
 
         temp = new String[]{"tokenize", "ssplit", "pos", "lemma",
-            "ner", "depparse"};
+            "ner", "parse", "depparse"};
         depChain.put("relation", temp);
 
         temp = new String[]{"tokenize", "ssplit", "pos", "lemma",
@@ -132,9 +137,6 @@ public class CoreNLP {
 
         String [] functionalities = _args.functionality.split(",");
         String pipeline_input = buildToDo(functionalities);
-        for (String f : funcToDo)
-            System.out.println(f);
-        System.out.println(pipeline_input);
 
         Properties props = new Properties();
         props.setProperty("annotators", pipeline_input);
@@ -148,17 +150,50 @@ public class CoreNLP {
 	
 	    Broadcast<Properties> propsVar = spark.sparkContext().broadcast(
             props, scala.reflect.ClassTag$.MODULE$.apply(Properties.class));
-        JavaRDD<String> lines = spark.read().textFile(_args.input).javaRDD();
-        JavaRDD<CoreDocument> docs = lines.map(line -> new CoreDocument(line));
+        JavaPairRDD<String, Long> lines = spark.read().textFile(_args.input).javaRDD().zipWithIndex();
 
-        docs.map(doc -> {
+        lines.flatMapToPair(pair -> {
+            Long index = pair._2();
+            String line = pair._1();
+            CoreDocument doc = new CoreDocument(line);
+            Annotation anno = new Annotation(line);
             StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
             pipeline.annotate(doc);
-            return doc.tokens().stream().map(token -> "("+token.word()+","+token.ner()+")").collect(Collectors.joining(" "));
-        })
+            pipeline.annotate(anno);
+
+            ArrayList<Tuple2<Tuple2<Long, String>, String>> mapResults = new ArrayList<>();
+            for (String func : funcToDo) {
+                if (func.equals("ner")) {
+                    String ans = doc.tokens().stream().map(token ->
+                        "("+token.word()+","+token.ner()+")").collect(Collectors.joining(" "));
+                    mapResults.add(new Tuple2<>(
+                        new Tuple2<>(index, func),
+                        ans));
+                }
+                if (func.equals("tokenize")) {
+                    String ans = "";
+                    for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
+                        ans += word.toString()+" ";
+                    mapResults.add(new Tuple2<>(
+                        new Tuple2<>(index, func),
+                        ans.substring(0, ans.length()-1)));
+                }
+            }
+            return mapResults.iterator();
+        }) //((index, functionality), answer)
+        // group by functionality, and then sort by sent-index
         .saveAsTextFile(_args.output);
 
         spark.stop();
 
     }
 }
+
+/* explicitly construct a Function object:
+            new PairFunction<Tuple2<String, Long>, Long, CoreDocument>() {
+                @Override
+                public Tuple2<Long, CoreDocument> call(Tuple2<String, Long> t) {
+                    return new Tuple2<>(t._2(), new CoreDocument(t._1()));
+                }
+            }
+*/
