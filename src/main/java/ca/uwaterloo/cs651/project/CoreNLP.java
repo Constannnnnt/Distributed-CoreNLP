@@ -147,8 +147,8 @@ public class CoreNLP {
           .appName("CoreNLP")
           .config("spark.hadoop.validateOutputSpecs", "false")
           .getOrCreate();
-	
-	    Broadcast<Properties> propsVar = spark.sparkContext().broadcast(
+    
+        Broadcast<Properties> propsVar = spark.sparkContext().broadcast(
             props, scala.reflect.ClassTag$.MODULE$.apply(Properties.class));
         JavaPairRDD<String, Long> lines = spark.read().textFile(_args.input).javaRDD().zipWithIndex();
 
