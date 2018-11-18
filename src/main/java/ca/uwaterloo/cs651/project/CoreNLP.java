@@ -1,14 +1,16 @@
 package ca.uwaterloo.cs651.project;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.pipeline.CoreNLPProtos.Sentiment;
-import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.simple.*;
 import edu.stanford.nlp.util.Quadruple;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 
 import org.apache.spark.api.java.*;
 import org.apache.spark.api.java.function.*;
@@ -69,7 +71,7 @@ public class CoreNLP {
         temp = new String[]{"tokenize", "ssplit", "pos", "lemma"};
         depChain.put("ner", temp);
 
-        temp = new String[]{"tokenize", "ssplit", "pos", "parse"};
+        temp = new String[]{"tokenize", "ssplit", "parse"};
         depChain.put("sentiment", temp);
 
         temp = new String[]{"tokenize", "ssplit", "pos", "lemma",
@@ -163,20 +165,30 @@ public class CoreNLP {
 
             ArrayList<Tuple2<Tuple2<Long, String>, String>> mapResults = new ArrayList<>();
             for (String func : funcToDo) {
-                if (func.equals("ner")) {
-                    String ans = doc.tokens().stream().map(token ->
-                            "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
-                    mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
-                            ans));
-                }
-                if (func.equals("tokenize")) {
+                if (func.equalsIgnoreCase("tokenize")) {
                     String ans = "";
                     for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
                         ans += word.toString() + " ";
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
+                }
+                if (func.equalsIgnoreCase("ner")) {
+                    String ans = doc.tokens().stream().map(token ->
+                            "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans));
+                }
+                if (func.equalsIgnoreCase("sentiment")) {
+                    int ans = -1;
+                    for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                        Tree tree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
+                        ans = RNNCoreAnnotations.getPredictedClass(tree);
+                    }
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            Integer.toString(ans) + "-" + line));
                 }
             }
             return mapResults.iterator();
