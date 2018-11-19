@@ -168,7 +168,7 @@ public class CoreNLP {
             pipeline.annotate(anno);
 
             ArrayList<Tuple2<Tuple2<Long, String>, String>> mapResults = new ArrayList<>();
-            for (String func : funcToDo) {
+            for (String func : functionalities) {
                 if (func.equalsIgnoreCase("tokenize")) {
                     String ans = "";
                     for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
@@ -188,7 +188,7 @@ public class CoreNLP {
                 else if (func.equalsIgnoreCase("ssplit")) {
                     String ans = "";
                     for (CoreMap sentence: anno.get(CoreAnnotations.SentencesAnnotation.class))
-			ans += sentence.toString() + "|";
+                        ans += sentence.toString() + "|";
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
@@ -201,7 +201,7 @@ public class CoreNLP {
                             new Tuple2<>(index, func),
                             ans));
                 }
-               else if (func.equalsIgnoreCase("lemma")) {
+                else if (func.equalsIgnoreCase("lemma")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.get(CoreAnnotations.LemmaAnnotation.class) + ")")
                             .collect(Collectors.joining(" "));
@@ -238,14 +238,14 @@ public class CoreNLP {
 
                         CorefMention cm = cc.getRepresentativeMention();
                         String clust = "";
-    			List<CoreLabel> tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(cm.sentNum-1).get(CoreAnnotations.TokensAnnotation.class);
-    			for(int i = cm.startIndex - 1; i < cm.endIndex - 1; i++) 
+                        List<CoreLabel> tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(cm.sentNum-1).get(CoreAnnotations.TokensAnnotation.class);
+                        for(int i = cm.startIndex - 1; i < cm.endIndex - 1; i++) 
                             clust += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
                         clust = clust.trim();
                         
                         tmpans += clust + ":";
                         for(CorefMention m : cc.getMentionsInTextualOrder()) {
-        		    String clust2 = "";
+                            String clust2 = "";
                             tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(m.sentNum-1).get(CoreAnnotations.TokensAnnotation.class);
                             for(int i = m.startIndex - 1; i < m.endIndex - 1; i++)
                                 clust2 += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
