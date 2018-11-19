@@ -189,7 +189,7 @@ public class CoreNLP {
                 else if (func.equalsIgnoreCase("ssplit")) {
                     String ans = "";
                     for (CoreMap sentence: anno.get(CoreAnnotations.SentencesAnnotation.class))
-			ans += sentence.toString() + " ";
+			ans += sentence.toString() + "|";
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
