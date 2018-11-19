@@ -181,6 +181,14 @@ public class CoreNLP {
                             new Tuple2<>(index, func),
                             ans));
                 }
+                if (func.equalsIgnoreCase("lemma")) {
+                    String ans = doc.tokens().stream().map(token ->
+                            "(" + token.word() + "," + token.get(CoreAnnotations.LemmaAnnotation.class) + ")")
+                            .collect(Collectors.joining(" "));
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans));
+                }
                 if (func.equalsIgnoreCase("ner")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
