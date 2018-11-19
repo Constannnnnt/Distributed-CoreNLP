@@ -16,6 +16,8 @@ import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.coref.CorefCoreAnnotations;
 import edu.stanford.nlp.coref.data.CorefChain;
 import edu.stanford.nlp.coref.data.CorefChain.CorefMention;
+import edu.stanford.nlp.naturalli.Polarity;
+import edu.stanford.nlp.naturalli.NaturalLogicAnnotations;
 
 import org.apache.spark.api.java.*;
 import org.apache.spark.api.java.function.*;
@@ -217,15 +219,29 @@ public class CoreNLP {
                             ans));
                 }
                 else if (func.equalsIgnoreCase("sentiment")) {
-                    int ans = -1;
+                    int sentiment = -1;
+                    String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
                         Tree tree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
-                        ans = RNNCoreAnnotations.getPredictedClass(tree);
+                        sentiment = RNNCoreAnnotations.getPredictedClass(tree);
+                        ans += "(" + Integer.toString(sentiment) + "," + sentence.toString() + ")" + " ";
                     }
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
-                            Integer.toString(ans) + "-" + line));
-                } 
+                            ans.substring(0, ans.length() - 1)));
+                }
+                else if (func.equalsIgnoreCase("natlog")) {
+                    String ans = "";
+                    for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                        for (CoreLabel tks: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                            ans += "(" + tks.word() + "," + tks.get(NaturalLogicAnnotations.PolarityAnnotation.class).toString() + ")" + " ";
+                        }
+                    }
+                    
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans.substring(0, ans.length() - 1)));
+                }
                 else if (func.equalsIgnoreCase("coref")) {
                     String ans = "";
                     String tmpans = "";
@@ -243,7 +259,7 @@ public class CoreNLP {
                             clust += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
                         clust = clust.trim();
                         
-                        tmpans += clust + ":";
+                        tmpans += "(" + clust + ":";
                         for(CorefMention m : cc.getMentionsInTextualOrder()) {
                             String clust2 = "";
                             tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(m.sentNum-1).get(CoreAnnotations.TokensAnnotation.class);
@@ -257,7 +273,7 @@ public class CoreNLP {
 
                             tmpans += clust2 + "|";
                         }
-                        ans = tmpans.substring(0, tmpans.length() - 1) + "; ";
+                        ans = tmpans.substring(0, tmpans.length() - 1) + ")";
                     }
                       
                     mapResults.add(new Tuple2<>(
@@ -280,6 +296,18 @@ public class CoreNLP {
                             new Tuple2<>(index, func),
                             ans));
                 }
+                else if (func.equalsIgnoreCase("quote")) {
+                    String ans = doc.quotes().stream().map(quote -> 
+                    "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
+                    if (ans.length() < 1) {
+                        mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),"()"));
+                    } else {
+                        mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans.substring(0, ans.length() - 1)));
+                    }
+                } 
             }
             return mapResults.iterator();
         }) //((index, functionality), answer)

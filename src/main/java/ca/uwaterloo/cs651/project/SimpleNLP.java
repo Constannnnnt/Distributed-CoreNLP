@@ -104,7 +104,7 @@ public class SimpleNLP {
                 parse.saveAsTextFile(_args.output+"/parse");
                 break;
             }
-            case "depparse": {//?????????????
+            case "depparse": {
                 JavaRDD<String> parse = sents
                     .map(sent -> sent.governor(0).toString());
                 parse.saveAsTextFile(_args.output+"/depparse");
@@ -129,7 +129,7 @@ public class SimpleNLP {
                 doc_sents.saveAsTextFile(_args.output+"/ssplit");
                 break;
             }
-            case "dcoref": {//?????????????
+            case "dcoref": {
                 JavaRDD<Map<Integer,CorefChain>> coref = docs
                     .map(doc -> doc.coref());
                 coref.saveAsTextFile(_args.output+"/dcoref");
