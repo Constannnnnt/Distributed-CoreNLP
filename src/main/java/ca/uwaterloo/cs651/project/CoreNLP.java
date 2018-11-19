@@ -1,5 +1,7 @@
 package ca.uwaterloo.cs651.project;
 
+import edu.stanford.nlp.ie.machinereading.structure.MachineReadingAnnotations;
+import edu.stanford.nlp.ie.machinereading.structure.RelationMention;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.pipeline.CoreNLPProtos.Sentiment;
@@ -22,10 +24,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.broadcast.*;
 import org.kohsuke.args4j.*;
 
-import java.util.Properties;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Map;
@@ -202,6 +201,14 @@ public class CoreNLP {
                             new Tuple2<>(index, func),
                             ans));
                 }
+               else if (func.equalsIgnoreCase("lemma")) {
+                    String ans = doc.tokens().stream().map(token ->
+                            "(" + token.word() + "," + token.get(CoreAnnotations.LemmaAnnotation.class) + ")")
+                            .collect(Collectors.joining(" "));
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans));
+                }
                 else if (func.equalsIgnoreCase("ner")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
@@ -257,7 +264,22 @@ public class CoreNLP {
                             new Tuple2<>(index, func),
                             ans));
                 }
-                // else if (func.equalsIgnoreCase("dcoref")) {}
+                else if (func.equalsIgnoreCase("relation")) {
+                    String ans = "";
+                    for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                        List<RelationMention> relations = sentence.get(MachineReadingAnnotations.RelationMentionsAnnotation.class);
+                        for (RelationMention i : relations) {
+                            String relationType = i.getType();
+                            String entity1 = i.getEntityMentionArgs().get(0).getValue();
+                            String entity2 = i.getEntityMentionArgs().get(1).getValue();
+                            ans += "(" + entity1 + "," + relationType + "," + entity2 + ")" + " ";
+                        }
+                    }
+                    ans = ans.substring(0, ans.length() - 1);
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans));
+                }
             }
             return mapResults.iterator();
         }) //((index, functionality), answer)
