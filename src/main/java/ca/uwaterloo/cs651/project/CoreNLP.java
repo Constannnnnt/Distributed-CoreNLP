@@ -319,8 +319,10 @@ public class CoreNLP {
             }
             return mapResults.iterator();
         })
-        .groupByKey(new LeftKeyPartitioner(functionalities))
-        .flatMap(pair -> pair._2().iterator())
+        .repartitionAndSortWithinPartitions(
+                new LeftKeyPartitioner(functionalities),
+                new RightKeyComparator())
+        .map(pair -> pair._2())
         .saveAsTextFile(_args.output);
 
         spark.stop();
