@@ -4,12 +4,10 @@ import edu.stanford.nlp.ie.machinereading.structure.MachineReadingAnnotations;
 import edu.stanford.nlp.ie.machinereading.structure.RelationMention;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.*;
-import edu.stanford.nlp.pipeline.CoreNLPProtos.Sentiment;
-import edu.stanford.nlp.simple.*;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
-import edu.stanford.nlp.util.Quadruple;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
@@ -17,11 +15,9 @@ import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.coref.CorefCoreAnnotations;
 import edu.stanford.nlp.coref.data.CorefChain;
 import edu.stanford.nlp.coref.data.CorefChain.CorefMention;
-import edu.stanford.nlp.naturalli.Polarity;
 import edu.stanford.nlp.naturalli.NaturalLogicAnnotations;
 
 import org.apache.spark.api.java.*;
-import org.apache.spark.api.java.function.*;
 import org.apache.spark.sql.SparkSession;
 import org.apache.log4j.Logger;
 import org.apache.spark.broadcast.*;
@@ -182,47 +178,41 @@ public class CoreNLP {
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
-                }
-                else if (func.equalsIgnoreCase("cleanxml")) {
+                } else if (func.equalsIgnoreCase("cleanxml")) {
                     String ans = "";
                     for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
                         ans += word.toString() + " ";
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
-                } 
-                else if (func.equalsIgnoreCase("ssplit")) {
+                } else if (func.equalsIgnoreCase("ssplit")) {
                     String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class))
                         ans += sentence.toString() + "|";
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
-                } 
-                else if (func.equalsIgnoreCase("pos")) {
+                } else if (func.equalsIgnoreCase("pos")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + ")")
                             .collect(Collectors.joining(" "));
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans));
-                } 
-                else if (func.equalsIgnoreCase("lemma")) {
+                } else if (func.equalsIgnoreCase("lemma")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.get(CoreAnnotations.LemmaAnnotation.class) + ")")
                             .collect(Collectors.joining(" "));
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans));
-                } 
-                else if (func.equalsIgnoreCase("ner")) {
+                } else if (func.equalsIgnoreCase("ner")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans));
-                }
-                else if (func.equalsIgnoreCase("parse")) {
+                } else if (func.equalsIgnoreCase("parse")) {
                     String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
                         Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
@@ -231,8 +221,17 @@ public class CoreNLP {
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
-                } 
-                else if (func.equalsIgnoreCase("sentiment")) {
+                } else if (func.equalsIgnoreCase("depparse")) {
+                    String ans = "";
+                    for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                        SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.EnhancedPlusPlusDependenciesAnnotation.class);
+//                        ans += graph.toString(SemanticGraph.OutputFormat.) + " ";
+                        ans += graph.toString() + " ";
+                    }
+                    mapResults.add(new Tuple2<>(
+                            new Tuple2<>(index, func),
+                            ans.substring(0, ans.length() - 1)));
+                } else if (func.equalsIgnoreCase("sentiment")) {
                     int sentiment = -1;
                     String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
@@ -243,20 +242,18 @@ public class CoreNLP {
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
-                }
-                else if (func.equalsIgnoreCase("natlog")) {
+                } else if (func.equalsIgnoreCase("natlog")) {
                     String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                        for (CoreLabel tks: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                        for (CoreLabel tks : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
                             ans += "(" + tks.word() + "," + tks.get(NaturalLogicAnnotations.PolarityAnnotation.class).toString() + ")" + " ";
                         }
                     }
-                    
+
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans.substring(0, ans.length() - 1)));
-                }
-                else if (func.equalsIgnoreCase("coref")) {
+                } else if (func.equalsIgnoreCase("coref")) {
                     String ans = "";
                     String tmpans = "";
                     Map<Integer, CorefChain> coref = anno.get(CorefCoreAnnotations.CorefChainAnnotation.class);
@@ -272,9 +269,9 @@ public class CoreNLP {
                         for (int i = cm.startIndex - 1; i < cm.endIndex - 1; i++)
                             clust += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
                         clust = clust.trim();
-                        
+
                         tmpans += "(" + clust + ":";
-                        for(CorefMention m : cc.getMentionsInTextualOrder()) {
+                        for (CorefMention m : cc.getMentionsInTextualOrder()) {
                             String clust2 = "";
                             tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(m.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
                             for (int i = m.startIndex - 1; i < m.endIndex - 1; i++)
@@ -293,8 +290,7 @@ public class CoreNLP {
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans));
-                }
-                else if (func.equalsIgnoreCase("relation")) {
+                } else if (func.equalsIgnoreCase("relation")) {
                     String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
                         List<RelationMention> relations = sentence.get(MachineReadingAnnotations.RelationMentionsAnnotation.class);
@@ -309,19 +305,18 @@ public class CoreNLP {
                     mapResults.add(new Tuple2<>(
                             new Tuple2<>(index, func),
                             ans));
-                }
-                else if (func.equalsIgnoreCase("quote")) {
-                    String ans = doc.quotes().stream().map(quote -> 
-                    "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
+                } else if (func.equalsIgnoreCase("quote")) {
+                    String ans = doc.quotes().stream().map(quote ->
+                            "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
                     if (ans.length() < 1) {
                         mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),"()"));
+                                new Tuple2<>(index, func), "()"));
                     } else {
                         mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
-                            ans.substring(0, ans.length() - 1)));
+                                new Tuple2<>(index, func),
+                                ans.substring(0, ans.length() - 1)));
                     }
-                } 
+                }
             }
             return mapResults.iterator();
         }) //((index, functionality), answer)
