@@ -39,3 +39,5 @@ hs_err_pid*
 
 output
 *.sh
+*data
+*.json
