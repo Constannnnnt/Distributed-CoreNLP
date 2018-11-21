@@ -25,8 +25,7 @@ import org.kohsuke.args4j.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.List;
-import java.util.Map;
+
 
 import scala.Tuple2;
 
@@ -169,48 +168,48 @@ public class CoreNLP {
             pipeline.annotate(doc);
             pipeline.annotate(anno);
 
-            ArrayList<Tuple2<Tuple2<Long, String>, String>> mapResults = new ArrayList<>();
+            ArrayList<Tuple2<Tuple2<String, Long>, String>> mapResults = new ArrayList<>();
             for (String func : functionalities) {
                 if (func.equalsIgnoreCase("tokenize")) {
                     String ans = "";
                     for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
                         ans += word.toString() + " ";
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("cleanxml")) {
                     String ans = "";
                     for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
                         ans += word.toString() + " ";
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("ssplit")) {
                     String ans = "";
                     for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class))
                         ans += sentence.toString() + "|";
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("pos")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + ")")
                             .collect(Collectors.joining(" "));
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans));
                 } else if (func.equalsIgnoreCase("lemma")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.get(CoreAnnotations.LemmaAnnotation.class) + ")")
                             .collect(Collectors.joining(" "));
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans));
                 } else if (func.equalsIgnoreCase("ner")) {
                     String ans = doc.tokens().stream().map(token ->
                             "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans));
                 } else if (func.equalsIgnoreCase("parse")) {
                     String ans = "";
@@ -219,7 +218,7 @@ public class CoreNLP {
                         ans += tree.toString() + " ";
                     }
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("depparse")) {
                     String ans = "";
@@ -229,7 +228,7 @@ public class CoreNLP {
                         ans += graph.toString() + " ";
                     }
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("sentiment")) {
                     int sentiment = -1;
@@ -240,7 +239,7 @@ public class CoreNLP {
                         ans += "(" + Integer.toString(sentiment) + "," + sentence.toString() + ")" + " ";
                     }
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("natlog")) {
                     String ans = "";
@@ -251,7 +250,7 @@ public class CoreNLP {
                     }
 
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans.substring(0, ans.length() - 1)));
                 } else if (func.equalsIgnoreCase("coref")) {
                     String ans = "";
@@ -288,7 +287,7 @@ public class CoreNLP {
                     }
 
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans));
                 } else if (func.equalsIgnoreCase("relation")) {
                     String ans = "";
@@ -303,25 +302,28 @@ public class CoreNLP {
                     }
                     ans = ans.substring(0, ans.length() - 1);
                     mapResults.add(new Tuple2<>(
-                            new Tuple2<>(index, func),
+                            new Tuple2<>(func, index),
                             ans));
                 } else if (func.equalsIgnoreCase("quote")) {
                     String ans = doc.quotes().stream().map(quote ->
                             "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
                     if (ans.length() < 1) {
                         mapResults.add(new Tuple2<>(
-                                new Tuple2<>(index, func), "()"));
+                                new Tuple2<>(func, index), "()"));
                     } else {
                         mapResults.add(new Tuple2<>(
-                                new Tuple2<>(index, func),
+                                new Tuple2<>(func, index),
                                 ans.substring(0, ans.length() - 1)));
                     }
                 }
             }
             return mapResults.iterator();
-        }) //((index, functionality), answer)
-                // group by functionality, and then sort by sent-index
-                .saveAsTextFile(_args.output);
+        })
+        .repartitionAndSortWithinPartitions(
+                new LeftKeyPartitioner(functionalities),
+                new RightKeyComparator())
+        .map(pair -> pair._2())
+        .saveAsTextFile(_args.output);
 
         spark.stop();
 
