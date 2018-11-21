@@ -158,6 +158,8 @@ public class CoreNLP {
         Broadcast<Properties> propsVar = spark.sparkContext().broadcast(
                 props, scala.reflect.ClassTag$.MODULE$.apply(Properties.class));
         JavaPairRDD<String, Long> lines = spark.read().textFile(_args.input).javaRDD().zipWithIndex();
+        LeftKeyPartitioner partitioner = new LeftKeyPartitioner(functionalities);
+        RightKeyComparator comparator = new RightKeyComparator();
 
         lines.flatMapToPair(pair -> {
             Long index = pair._2();
@@ -319,9 +321,7 @@ public class CoreNLP {
             }
             return mapResults.iterator();
         })
-        .repartitionAndSortWithinPartitions(
-                new LeftKeyPartitioner(functionalities),
-                new RightKeyComparator())
+        .repartitionAndSortWithinPartitions(partitioner, comparator)
         .map(pair -> pair._2())
         .saveAsTextFile(_args.output);
 
