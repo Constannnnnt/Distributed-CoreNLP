@@ -159,12 +159,14 @@ public class CoreNLP {
                 props, scala.reflect.ClassTag$.MODULE$.apply(Properties.class));
         JavaPairRDD<String, Long> lines = spark.read().textFile(_args.input).javaRDD().zipWithIndex();
 
-        lines.flatMapToPair(pair -> {
+        lines.mapPartitionsToPair(partition -> {
+            StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
+
+            
             Long index = pair._2();
             String line = pair._1();
             CoreDocument doc = new CoreDocument(line);
             Annotation anno = new Annotation(line);
-            StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
             pipeline.annotate(doc);
             pipeline.annotate(anno);
 
