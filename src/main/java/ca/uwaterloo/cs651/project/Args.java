@@ -14,6 +14,6 @@ public class Args {
         usage="required funtionalities, separated by comma")
     String functionality;
 
-    @Option(name="-reducers", metaVar="[num]", usage="number of reducers")
-    int numReducers = 1;
+    @Option(name="-mappers", metaVar="[num]", usage="number of mappers")
+    int numMappers = 1;
 }

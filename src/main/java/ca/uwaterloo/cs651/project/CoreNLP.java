@@ -137,7 +137,8 @@ public class CoreNLP {
         LOG.info("Tool: " + CoreNLP.class.getSimpleName());
         LOG.info("input path: " + _args.input);
         LOG.info("output path: " + _args.output);
-        LOG.info(" - functionalities: " + _args.functionality);
+        LOG.info("functionalities: " + _args.functionality);
+        LOG.info("number of mappers: " + _args.numMappers);
 
         String[] functionalities = _args.functionality.split(",");
         String pipeline_input = buildToDo(functionalities);
@@ -161,7 +162,8 @@ public class CoreNLP {
         LeftKeyPartitioner partitioner = new LeftKeyPartitioner(functionalities);
         RightKeyComparator comparator = new RightKeyComparator();
 
-        lines.mapPartitionsToPair(partition -> {
+        lines.repartition(_args.numMappers)
+        .mapPartitionsToPair(partition -> {
             StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
             ArrayList<Tuple2<Tuple2<String, Long>, String>> mapResults = new ArrayList<>();
 
