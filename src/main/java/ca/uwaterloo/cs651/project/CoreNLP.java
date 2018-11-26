@@ -195,27 +195,48 @@ public class CoreNLP {
                     } else if (func.equalsIgnoreCase("ssplit")) {
                         String ans = "";
                         for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class))
-                            ans += sentence.toString() + "|";
+                            ans += sentence.toString() + " ||| ";
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index),
-                                ans.substring(0, ans.length() - 1)));
+                                ans.substring(0, ans.length() - 5)));
+                    /*} else if (func.equalsIgnoreCase("pos")) {
+                        String ans = " ";
+                        for (CoreLabel token: doc.tokens())
+                            ans += token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + " ";
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.substring(0, ans.length()-1)));
+                    } else if (func.equalsIgnoreCase("lemma")) {
+                        String ans = "";
+                        for (CoreLabel token: doc.tokens())
+                            ans += token.get(CoreAnnotations.LemmaAnnotation.class) + " ";
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.substring(0, ans.length()-1)));
+                    } else if (func.equalsIgnoreCase("ner")) {
+                        String ans = "";
+                        for (CoreLabel token: doc.tokens())
+                            ans += token.ner() + " ";
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.substring(0, ans.length()-1)));*/
                     } else if (func.equalsIgnoreCase("pos")) {
                         String ans = doc.tokens().stream().map(token ->
-                                "(" + token.word() + "," + token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + ")")
+                                token.get(CoreAnnotations.PartOfSpeechAnnotation.class))
                                 .collect(Collectors.joining(" "));
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index),
                                 ans));
                     } else if (func.equalsIgnoreCase("lemma")) {
                         String ans = doc.tokens().stream().map(token ->
-                                "(" + token.word() + "," + token.get(CoreAnnotations.LemmaAnnotation.class) + ")")
+                                token.get(CoreAnnotations.LemmaAnnotation.class))
                                 .collect(Collectors.joining(" "));
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index),
                                 ans));
                     } else if (func.equalsIgnoreCase("ner")) {
                         String ans = doc.tokens().stream().map(token ->
-                                "(" + token.word() + "," + token.ner() + ")").collect(Collectors.joining(" "));
+                                token.ner()).collect(Collectors.joining(" "));
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index),
                                 ans));
