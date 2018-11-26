@@ -180,8 +180,8 @@ public class CoreNLP {
                 for (String func : functionalities) {
                     if (func.equalsIgnoreCase("tokenize")) {
                         String ans = "";
-                        for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
-                            ans += word.toString() + " ";
+                        for (CoreLabel token : anno.get(CoreAnnotations.TokensAnnotation.class))
+                            ans += token.word() + " ";
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index),
                                 ans.substring(0, ans.length() - 1)));
