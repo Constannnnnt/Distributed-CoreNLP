@@ -16,6 +16,7 @@ import edu.stanford.nlp.coref.CorefCoreAnnotations;
 import edu.stanford.nlp.coref.data.CorefChain;
 import edu.stanford.nlp.coref.data.CorefChain.CorefMention;
 import edu.stanford.nlp.naturalli.NaturalLogicAnnotations;
+import edu.stanford.nlp.ie.util.RelationTriple;
 
 import org.apache.spark.api.java.*;
 import org.apache.spark.sql.SparkSession;
@@ -52,6 +53,7 @@ public class CoreNLP {
         supportedFunc.add("relation");//Assigned to Rex
         supportedFunc.add("natlog");
         supportedFunc.add("quote");
+        supportedFunc.add("openie");
 
         String[] temp;
         temp = new String[]{};
@@ -94,6 +96,10 @@ public class CoreNLP {
         temp = new String[]{"tokenize", "ssplit", "pos", "lemma",
                 "ner", "depparse", "coref"};
         depChain.put("quote", temp);
+
+        temp = new String[]{"tokenize", "ssplit", "pos", "lemma",
+                "depparse", "natlog"};
+        depChain.put("openie", temp);
     }
 
     private static String buildToDo(String[] functionalities)
@@ -266,6 +272,20 @@ public class CoreNLP {
                                     }
                                 }
 
+                                mapResults.add(new Tuple2<>(
+                                        new Tuple2<>(func, index),
+                                        ans.substring(0, ans.length() - 1)));
+                            } else if (func.equalsIgnoreCase("openie")) {
+                                // Loop over sentences in the document
+                                String ans = "";
+                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                                  // Get the OpenIE triples for the sentence
+                                  Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
+                                  // Print the triples
+                                  for (RelationTriple triple : triples) {
+                                    ans += "(" + triple.confidence + "," + triple.subjectLemmaGloss() + "," + triple.relationLemmaGloss() + "," + triple.objectLemmaGloss() + ")" + " ";
+                                  }
+                                }       
                                 mapResults.add(new Tuple2<>(
                                         new Tuple2<>(func, index),
                                         ans.substring(0, ans.length() - 1)));
