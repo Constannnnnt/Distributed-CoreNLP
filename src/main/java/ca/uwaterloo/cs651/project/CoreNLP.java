@@ -276,16 +276,21 @@ public class CoreNLP {
                                 new Tuple2<>(func, index),
                                 ans.substring(0, ans.length() - 1)));
                     } else if (func.equalsIgnoreCase("sentiment")) {
-                        int sentiment = -1;
+                        int mainSentiment = -1;
                         String ans = "";
+                        int longest = 0;
                         for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
                             Tree tree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
-                            sentiment = RNNCoreAnnotations.getPredictedClass(tree);
-                            ans += "(" + Integer.toString(sentiment) + "," + sentence.toString() + ")" + " ";
+                            int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
+                            String partText = sentence.toString();
+                	    if (partText.length() > longest) {
+                              mainSentiment = sentiment;
+                              longest = partText.length();
+                            }
                         }
+                        ans += "(" + Integer.toString(mainSentiment) + ")";
                         mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length() - 1)));
+                                new Tuple2<>(func, index), ans));
                     } else if (func.equalsIgnoreCase("natlog")) {
                         String ans = "";
                         for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
