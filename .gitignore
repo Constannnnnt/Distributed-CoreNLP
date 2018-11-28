@@ -37,7 +37,7 @@ hs_err_pid*
 .idea/hydra.xml
 .idea/hydra.xml
 
-output
+output*
 *.sh
 *data
 *.json
