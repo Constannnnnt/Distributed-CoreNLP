@@ -295,7 +295,7 @@ public class CoreNLP {
                         String ans = "";
                         for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
                             for (CoreLabel tks : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                                ans += "(" + tks.word() + "," + tks.get(NaturalLogicAnnotations.PolarityAnnotation.class).toString() + ")" + " ";
+                                ans += tks.get(NaturalLogicAnnotations.PolarityAnnotation.class).toString() + " ";
                             }
                         }
 
