@@ -288,7 +288,7 @@ public class CoreNLP {
                               longest = partText.length();
                             }
                         }
-                        ans += "(" + Integer.toString(mainSentiment) + ")";
+                        ans += Integer.toString(mainSentiment);
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index), ans));
                     } else if (func.equalsIgnoreCase("natlog")) {
