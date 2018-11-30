@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+
 import multiprocessing
 import json
 import html.parser
@@ -13,10 +15,10 @@ class HTMLTextExtractor(html.parser.HTMLParser):
         self.result.append(d)
 
     def get_text(self):
-        return ''.join(self.result)
+        return ' '.join(self.result)
 
 def collectResults(ret):
-    outfile = open("washington_post.txt", "a")
+    outfile = open("washington_post.txt", "a", encoding="utf-8")
     outfile.write(str(ret)+"\n")
 
 def genPosts(post):
@@ -32,8 +34,8 @@ def genPosts(post):
     return ret
 
 if __name__ == "__main__":
-    pool = multiprocessing.Pool(4)
-    file = open("washington_post_sample.json", "r")
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() + 2)
+    file = open("washington_post_sample.json", "r", encoding="utf-8")
     posts = file.readlines()
     for post in posts:
         pool.map_async(genPosts, (json.loads(post),), callback = collectResults)

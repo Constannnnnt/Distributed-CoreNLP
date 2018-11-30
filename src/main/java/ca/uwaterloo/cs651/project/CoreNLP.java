@@ -26,7 +26,7 @@ import org.kohsuke.args4j.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+import java.lang.StringBuilder;
 
 import scala.Tuple2;
 
@@ -183,8 +183,11 @@ public class CoreNLP {
             
                 Long index = pair._2();
                 String line = pair._1();
-                CoreDocument doc = new CoreDocument(line);
-                Annotation anno = new Annotation(line);
+                String[] blocks = line.split(": ");
+                String postId = blocks[0].substring(3, blocks[0].length() - 1);
+                String post = blocks[1].substring(1, blocks[1].length() - 3);
+                CoreDocument doc = new CoreDocument(post);
+                Annotation anno = new Annotation(post);
                 pipeline.annotate(doc);
                 pipeline.annotate(anno);
 
@@ -204,12 +207,14 @@ public class CoreNLP {
                                 new Tuple2<>(func, index),
                                 ans.substring(0, ans.length() - 1)));
                     } else if (func.equalsIgnoreCase("ssplit")) {
-                        String ans = "";
-                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class))
-                            ans += sentence.toString() + " ||| ";
+                        // String ans = "";
+                        StringBuilder ans = new StringBuilder();
+                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                            ans.append(sentence.toString());
+                            ans.append(System.lineSeparator());
+                        }
                         mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length() - 5)));
+                                new Tuple2<>(func, index), ans.toString()));
                     /*} else if (func.equalsIgnoreCase("pos")) {
                         String ans = " ";
                         for (CoreLabel token: doc.tokens())
