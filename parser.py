@@ -5,6 +5,7 @@ import multiprocessing
 import json
 import html.parser
 import re
+import sys
 
 class HTMLTextExtractor(html.parser.HTMLParser):
     def __init__(self):
@@ -17,11 +18,13 @@ class HTMLTextExtractor(html.parser.HTMLParser):
     def get_text(self):
         return ' '.join(self.result)
 
-def collectResults(ret):
+def collectResults(ret_cnt):
+    total_line = 595037
+    print("Processed {}% of Posts".format(str(100.0 * ret_cnt[1] / total_line)))
     outfile = open("washington_post.txt", "a", encoding="utf-8")
-    outfile.write(str(ret)+"\n")
+    outfile.write(str(ret_cnt[0])+"\n")
 
-def genPosts(post):
+def genPosts(post, cnt):
     ret = {}
     sentence = HTMLTextExtractor()
     if "contents" in post:
@@ -31,13 +34,15 @@ def genPosts(post):
                     sentence.feed(str(block["content"]))
     paragraph = sentence.get_text()
     ret[post["id"]] = paragraph
-    return ret
+    return [ret, cnt]
 
 if __name__ == "__main__":
     pool = multiprocessing.Pool(multiprocessing.cpu_count() + 2)
-    file = open("washington_post_sample.json", "r", encoding="utf-8")
-    posts = file.readlines()
+    wpfile = open(sys.argv[1], "r", encoding="utf-8")
+    posts = wpfile.readlines()
+    cnt = 0
     for post in posts:
-        pool.map_async(genPosts, (json.loads(post),), callback = collectResults)
+        cnt += 1
+        pool.apply_async(genPosts, (json.loads(post), cnt,), callback = collectResults)
     pool.close()
     pool.join()
