@@ -6,6 +6,7 @@ import json
 import html.parser
 import re
 import sys
+import unicodedata
 
 class HTMLTextExtractor(html.parser.HTMLParser):
     def __init__(self):
@@ -21,7 +22,7 @@ class HTMLTextExtractor(html.parser.HTMLParser):
 def collectResults(ret_cnt):
     total_line = 595037
     print("Processed {}% of Posts".format(str(100.0 * ret_cnt[1] / total_line)))
-    outfile = open("washington_post.txt", "a", encoding="utf-8")
+    outfile = open("/tmp/washington_post.txt", "a", encoding="utf-8")
     outfile.write(str(ret_cnt[0])+"\n")
 
 def genPosts(post, cnt):
@@ -33,6 +34,8 @@ def genPosts(post, cnt):
                 if (block["type"] == "sanitized_html"):
                     sentence.feed(str(block["content"]))
     paragraph = sentence.get_text()
+    paragraph = unicodedata.normalize("NFKD",paragraph)
+    paragraph = paragraph.replace("\n", "")
     ret[post["id"]] = paragraph
     return [ret, cnt]
 

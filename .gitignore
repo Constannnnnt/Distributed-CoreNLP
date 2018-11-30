@@ -41,3 +41,5 @@ output*
 *.sh
 *data
 wp_sample.json
+washington_post.txt
+parser.log
