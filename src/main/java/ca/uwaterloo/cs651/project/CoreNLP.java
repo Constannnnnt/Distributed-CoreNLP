@@ -184,8 +184,8 @@ public class CoreNLP {
                 Long index = pair._2();
                 String line = pair._1();
                 String[] blocks = line.split(": ");
-                String postId = blocks[0].substring(3, blocks[0].length() - 1);
-                String post = blocks[1].substring(1, blocks[1].length() - 3);
+                String postId = blocks[0].substring(2, blocks[0].length() - 1);
+                String post = blocks[1].substring(1, blocks[1].length() - 2);
                 CoreDocument doc = new CoreDocument(post);
                 Annotation anno = new Annotation(post);
                 pipeline.annotate(doc);
