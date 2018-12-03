@@ -1,7 +1,5 @@
 package ca.uwaterloo.cs651.project;
 
-import edu.stanford.nlp.ie.machinereading.structure.MachineReadingAnnotations;
-import edu.stanford.nlp.ie.machinereading.structure.RelationMention;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -38,19 +36,19 @@ public class CoreNLP {
     private static ArrayList<String> funcToDo = new ArrayList<String>();
 
     private static void buildChain() {
-        supportedFunc.add("tokenize");//Assigned to Jayden
-        supportedFunc.add("cleanxml");//Assigned to Constant
-        supportedFunc.add("ssplit");//Assigned to Constant
-        supportedFunc.add("pos");//Assigned to Rex
-        supportedFunc.add("lemma");//Assigned to Rex
-        supportedFunc.add("ner");//Assigned to Jayden
+        supportedFunc.add("tokenize");
+        supportedFunc.add("cleanxml");
+        supportedFunc.add("ssplit");
+        supportedFunc.add("pos");
+        supportedFunc.add("lemma");
+        supportedFunc.add("ner");
         supportedFunc.add("regexner");
-        supportedFunc.add("sentiment");//Assigned to Constant
-        supportedFunc.add("parse");//Assigned to Rex
-        supportedFunc.add("depparse");//Assigned to Rex
-        supportedFunc.add("dcoref");//Assigned to Constant
-        supportedFunc.add("coref");//Assigned to Constant
-        supportedFunc.add("relation");//Assigned to Rex
+        supportedFunc.add("sentiment");
+        supportedFunc.add("parse");
+        supportedFunc.add("depparse");
+        supportedFunc.add("dcoref");
+        supportedFunc.add("coref");
+        supportedFunc.add("relation");
         supportedFunc.add("natlog");
         supportedFunc.add("quote");
         supportedFunc.add("openie");
