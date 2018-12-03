@@ -10,8 +10,8 @@ public class Args {
     @Option(name = "-output", metaVar = "[path]", required = true, usage = "output path")
     String output;
 
-    @Option(name = "-regexner", metaVar = "[path]", usage = "regexner path")
-    String regexner;
+//    @Option(name = "-regexner", metaVar = "[path]", usage = "regexner path")
+//    String regexner;
 
     @Option(name = "-functionality", metaVar = "[listOfString]", required = true,
             usage = "required funtionalities, separated by comma")
