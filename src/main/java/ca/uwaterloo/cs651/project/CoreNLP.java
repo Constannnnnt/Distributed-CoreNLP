@@ -1,7 +1,5 @@
 package ca.uwaterloo.cs651.project;
 
-import edu.stanford.nlp.ie.machinereading.structure.MachineReadingAnnotations;
-import edu.stanford.nlp.ie.machinereading.structure.RelationMention;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -38,19 +36,19 @@ public class CoreNLP {
     private static ArrayList<String> funcToDo = new ArrayList<String>();
 
     private static void buildChain() {
-        supportedFunc.add("tokenize");//Assigned to Jayden
-        supportedFunc.add("cleanxml");//Assigned to Constant
-        supportedFunc.add("ssplit");//Assigned to Constant
-        supportedFunc.add("pos");//Assigned to Rex
-        supportedFunc.add("lemma");//Assigned to Rex
-        supportedFunc.add("ner");//Assigned to Jayden
+        supportedFunc.add("tokenize");
+        supportedFunc.add("cleanxml");
+        supportedFunc.add("ssplit");
+        supportedFunc.add("pos");
+        supportedFunc.add("lemma");
+        supportedFunc.add("ner");
         supportedFunc.add("regexner");
-        supportedFunc.add("sentiment");//Assigned to Constant
-        supportedFunc.add("parse");//Assigned to Rex
-        supportedFunc.add("depparse");//Assigned to Rex
-        supportedFunc.add("dcoref");//Assigned to Constant
-        supportedFunc.add("coref");//Assigned to Constant
-        supportedFunc.add("relation");//Assigned to Rex
+        supportedFunc.add("sentiment");
+        supportedFunc.add("parse");
+        supportedFunc.add("depparse");
+        supportedFunc.add("dcoref");
+        supportedFunc.add("coref");
+        supportedFunc.add("relation");
         supportedFunc.add("natlog");
         supportedFunc.add("quote");
         supportedFunc.add("openie");
@@ -155,7 +153,7 @@ public class CoreNLP {
         props.setProperty("annotators", pipeline_input);
         props.setProperty("ner.useSUTime", "false");
         if (_args.functionality.contains("regexner"))
-            props.put("regexner.mapping", "regexner.txt");
+            props.put("regexner.mapping", _args.regexner);
         // use faster shift reduce parser
 //        props.setProperty("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
         props.setProperty("parse.maxlen", "100");
@@ -173,48 +171,48 @@ public class CoreNLP {
         RightKeyComparator comparator = new RightKeyComparator();
 
         lines
-        .repartition(_args.numMappers)
-        .mapPartitionsToPair(partition -> {
-            StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
-            ArrayList<Tuple2<Tuple2<String, Long>, String>> mapResults = new ArrayList<>();
+                .repartition(_args.numMappers)
+                .mapPartitionsToPair(partition -> {
+                    StanfordCoreNLP pipeline = new StanfordCoreNLP(propsVar.getValue());
+                    ArrayList<Tuple2<Tuple2<String, Long>, String>> mapResults = new ArrayList<>();
 
-            while (partition.hasNext()) {
-                Tuple2<String, Long> pair = (Tuple2)partition.next();
-            
-                Long index = pair._2();
-                String line = pair._1();
-                String[] blocks = line.split(": ");
-                String postId = blocks[0].substring(2, blocks[0].length() - 1);
-                String post = blocks[1].substring(1, blocks[1].length() - 2);
-                CoreDocument doc = new CoreDocument(post);
-                Annotation anno = new Annotation(post);
-                pipeline.annotate(doc);
-                pipeline.annotate(anno);
+                    while (partition.hasNext()) {
+                        Tuple2<String, Long> pair = (Tuple2) partition.next();
 
-                for (String func : functionalities) {
-                    if (func.equalsIgnoreCase("tokenize")) {
-                        String ans = "";
-                        for (CoreLabel token : anno.get(CoreAnnotations.TokensAnnotation.class))
-                            ans += token.word() + " ";
-                        mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length() - 1)));
-                    } else if (func.equalsIgnoreCase("cleanxml")) {
-                        String ans = "";
-                        for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
-                            ans += word.toString() + " ";
-                        mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length() - 1)));
-                    } else if (func.equalsIgnoreCase("ssplit")) {
-                        // String ans = "";
-                        StringBuilder ans = new StringBuilder();
-                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                            ans.append(sentence.toString());
-                            ans.append(System.lineSeparator());
-                        }
-                        mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index), ans.toString()));
+                        Long index = pair._2();
+                        String line = pair._1();
+                        String[] blocks = line.split(": ");
+                        String postId = blocks[0].substring(2, blocks[0].length() - 1);
+                        String post = blocks[1].substring(1, blocks[1].length() - 2);
+                        CoreDocument doc = new CoreDocument(post);
+                        Annotation anno = new Annotation(post);
+                        pipeline.annotate(doc);
+                        pipeline.annotate(anno);
+
+                        for (String func : functionalities) {
+                            if (func.equalsIgnoreCase("tokenize")) {
+                                String ans = "";
+                                for (CoreLabel token : anno.get(CoreAnnotations.TokensAnnotation.class))
+                                    ans += token.word() + " ";
+                                mapResults.add(new Tuple2<>(
+                                        new Tuple2<>(func, index),
+                                        ans.substring(0, ans.length() - 1)));
+                            } else if (func.equalsIgnoreCase("cleanxml")) {
+                                String ans = "";
+                                for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
+                                    ans += word.toString() + " ";
+                                mapResults.add(new Tuple2<>(
+                                        new Tuple2<>(func, index),
+                                        ans.substring(0, ans.length() - 1)));
+                            } else if (func.equalsIgnoreCase("ssplit")) {
+                                // String ans = "";
+                                StringBuilder ans = new StringBuilder();
+                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                                    ans.append(sentence.toString());
+                                    ans.append(System.lineSeparator());
+                                }
+                                mapResults.add(new Tuple2<>(
+                                        new Tuple2<>(func, index), ans.toString()));
                     /*} else if (func.equalsIgnoreCase("pos")) {
                         String ans = " ";
                         for (CoreLabel token: doc.tokens())
