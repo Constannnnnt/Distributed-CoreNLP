@@ -153,7 +153,7 @@ public class CoreNLP {
         props.setProperty("annotators", pipeline_input);
         props.setProperty("ner.useSUTime", "false");
         if (_args.functionality.contains("regexner"))
-            props.put("regexner.mapping", _args.regexner);
+            props.put("regexner.mapping", "regexner.txt");
         // use faster shift reduce parser
 //        props.setProperty("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
         props.setProperty("parse.maxlen", "100");
