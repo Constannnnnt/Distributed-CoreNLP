@@ -234,131 +234,151 @@ public class CoreNLP {
                         mapResults.add(new Tuple2<>(
                                 new Tuple2<>(func, index),
                                 ans.substring(0, ans.length()-1)));*/
-                            } else if (func.equalsIgnoreCase("pos")) {
-                                String ans = doc.tokens().stream().map(token ->
-                                        token.get(CoreAnnotations.PartOfSpeechAnnotation.class))
-                                        .collect(Collectors.joining(" "));
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans));
-                            } else if (func.equalsIgnoreCase("lemma")) {
-                                String ans = doc.tokens().stream().map(token ->
-                                        token.get(CoreAnnotations.LemmaAnnotation.class))
-                                        .collect(Collectors.joining(" "));
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans));
-                            } else if (func.equalsIgnoreCase("ner")) {
-                                String ans = doc.tokens().stream().map(token ->
-                                        token.ner()).collect(Collectors.joining(" "));
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans));
-                            } else if (func.equalsIgnoreCase("regexner")) {
-                                String ans = doc.tokens().stream().map(token ->
-                                        token.ner()).collect(Collectors.joining(" "));
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans));
-                            } else if (func.equalsIgnoreCase("parse")) {
-                                String ans = "";
-                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                                    Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-                                    ans += tree.toString() + " ";
-                                }
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans.substring(0, ans.length() - 1)));
-                            } else if (func.equalsIgnoreCase("depparse")) {
-                                String ans = "";
-                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                                    SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.EnhancedPlusPlusDependenciesAnnotation.class);
-                                    ans += graph.toString() + " ";
-                                }
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans.substring(0, ans.length() - 1)));
-                            } else if (func.equalsIgnoreCase("sentiment")) {
-                                int mainSentiment = -1;
-                                String ans = "";
-                                int longest = 0;
-                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                                    Tree tree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
-                                    int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
-                                    String partText = sentence.toString();
-                                    if (partText.length() > longest) {
-                                        mainSentiment = sentiment;
-                                        longest = partText.length();
-                                    }
-                                }
-                                ans += Integer.toString(mainSentiment);
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index), ans));
-                            } else if (func.equalsIgnoreCase("natlog")) {
-                                String ans = "";
-                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                                    for (CoreLabel tks : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                                        ans += tks.get(NaturalLogicAnnotations.PolarityAnnotation.class).toString() + " ";
-                                    }
-                                }
-
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans.substring(0, ans.length() - 1)));
-                            } else if (func.equalsIgnoreCase("openie")) {
-                                // Loop over sentences in the document
-                                String ans = "";
-                                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
-                                    // Get the OpenIE triples for the sentence
-                                    Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
-                                    // Print the triples
-                                    for (RelationTriple triple : triples) {
-                                        ans += "(" + triple.confidence + "," + triple.subjectLemmaGloss() + "," + triple.relationLemmaGloss() + "," + triple.objectLemmaGloss() + ")" + " ";
-                                    }
-                                }
-                                mapResults.add(new Tuple2<>(
-                                        new Tuple2<>(func, index),
-                                        ans.substring(0, ans.length() - 1)));
-                            } else if (func.equalsIgnoreCase("coref")) {
-                                String ans = "";
-                                String tmpans = "";
-                                Map<Integer, CorefChain> coref = anno.get(CorefCoreAnnotations.CorefChainAnnotation.class);
-                                for (Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
-                                    CorefChain cc = entry.getValue();
-
-                                    //this is because it prints out a lot of self references which aren't that useful
-                                    if (cc.getMentionsInTextualOrder().size() <= 1) continue;
-
-                                    CorefMention cm = cc.getRepresentativeMention();
-                                    String clust = "";
-                                    List<CoreLabel> tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(cm.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
-                                    for (int i = cm.startIndex - 1; i < cm.endIndex - 1; i++)
-                                        clust += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
-                                    clust = clust.trim();
-
-                                    tmpans += "(" + clust + ":";
-                                    for (CorefMention m : cc.getMentionsInTextualOrder()) {
-                                        String clust2 = "";
-                                        tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(m.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
-                                        for (int i = m.startIndex - 1; i < m.endIndex - 1; i++)
-                                            clust2 += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
-                                        clust2 = clust2.trim();
-
-                                        //don't need the self mention
-                                        if (clust.equals(clust2))
-                                            continue;
-
-                                        tmpans += clust2 + "|";
-                                    }
-                                }
+                    } else if (func.equalsIgnoreCase("pos")) {
+                        String ans = doc.tokens().stream().map(token ->
+                                token.get(CoreAnnotations.PartOfSpeechAnnotation.class))
+                                .collect(Collectors.joining(" "));
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans));
+                    } else if (func.equalsIgnoreCase("lemma")) {
+                        String ans = doc.tokens().stream().map(token ->
+                                token.get(CoreAnnotations.LemmaAnnotation.class))
+                                .collect(Collectors.joining(" "));
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans));
+                    } else if (func.equalsIgnoreCase("ner")) {
+                        String ans = doc.tokens().stream().map(token ->
+                                token.ner()).collect(Collectors.joining(" "));
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans));
+                    } else if (func.equalsIgnoreCase("regexner")) {
+                        String ans = doc.tokens().stream().map(token ->
+                                token.ner()).collect(Collectors.joining(" "));
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans));
+                    } else if (func.equalsIgnoreCase("parse")) {
+                        // String ans = "";
+                        StringBuilder ans = new StringBuilder();
+                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                            Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+                            // ans += tree.toString() + " ";
+                            ans.append(tree.toString());
+                            ans.append(System.lineSeparator());
+                        }
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.toString()));
+                    } else if (func.equalsIgnoreCase("depparse")) {
+                        // String ans = "";
+			StringBuilder ans = new StringBuilder();
+                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                            SemanticGraph graph = sentence.get(SemanticGraphCoreAnnotations.EnhancedPlusPlusDependenciesAnnotation.class);
+                            // ans += graph.toString() + " ";
+                            ans.append(graph.toString());
+                            ans.append(System.lineSeparator());
+                        }
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.toString()));
+                    } else if (func.equalsIgnoreCase("sentiment")) {
+                        int mainSentiment = -1;
+                        // String ans = "";
+                        int longest = 0;
+			StringBuilder ans = new StringBuilder();
+                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                            Tree tree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
+                            int sentiment = RNNCoreAnnotations.getPredictedClass(tree);
+                            // String partText = sentence.toString();
+                	    // if (partText.length() > longest) {
+                            //   mainSentiment = sentiment;
+                            //  longest = partText.length();
+                            // }
+			    ans.append(Integer.toString(sentiment));
+			    ans.append(System.lineSeparator());
+                        }
+                        // ans += Integer.toString(mainSentiment);
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index), ans.toString()));
+                    } else if (func.equalsIgnoreCase("natlog")) {
+                        // String ans = "";
+			StringBuilder ans = new StringBuilder();
+                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                            for (CoreLabel tks : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                                ans.append(tks.get(NaturalLogicAnnotations.PolarityAnnotation.class).toString() + " ");
                             }
-                        } //end of func enumeration
-                    } //end of sentences within a partition
-                    return mapResults.iterator();
-                })
-                .repartitionAndSortWithinPartitions(partitioner, comparator)
-                .map(pair -> pair._2())
-                .saveAsTextFile(_args.output);
+			    ans.append(System.lineSeparator());
+                        }
+
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.toString()));
+                    } else if (func.equalsIgnoreCase("openie")) {
+                        // Loop over sentences in the document
+                        // String ans = "";
+			StringBuilder ans = new StringBuilder();
+                        for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                          // Get the OpenIE triples for the sentence
+                          Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
+                          // Print the triples
+                          for (RelationTriple triple : triples) {
+                            ans.append("(" + triple.confidence + "," + triple.subjectLemmaGloss() + "," + triple.relationLemmaGloss() + "," + triple.objectLemmaGloss() + ")");
+			    ans.append(System.lineSeparator());
+                          }
+                        }       
+                        mapResults.add(new Tuple2<>(
+                                new Tuple2<>(func, index),
+                                ans.toString()));
+                    } else if (func.equalsIgnoreCase("coref")) {
+                        // String ans = "";
+			StringBuilder ans = new StringBuilder();
+                        Map<Integer, CorefChain> coref = anno.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+                        for (Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
+                            String tmpans = "";
+                            CorefChain cc = entry.getValue();
+
+                            //this is because it prints out a lot of self references which aren't that useful
+                            if (cc.getMentionsInTextualOrder().size() <= 1) continue;
+
+                            CorefMention cm = cc.getRepresentativeMention();
+                            String clust = "";
+                            List<CoreLabel> tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(cm.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
+                            for (int i = cm.startIndex - 1; i < cm.endIndex - 1; i++)
+                                clust += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
+                            clust = clust.trim();
+
+                            tmpans += "(" + clust + ":";
+                            for (CorefMention m : cc.getMentionsInTextualOrder()) {
+                                String clust2 = "";
+                                tks = anno.get(CoreAnnotations.SentencesAnnotation.class).get(m.sentNum - 1).get(CoreAnnotations.TokensAnnotation.class);
+                                for (int i = m.startIndex - 1; i < m.endIndex - 1; i++)
+                                    clust2 += tks.get(i).get(CoreAnnotations.TextAnnotation.class) + " ";
+                                clust2 = clust2.trim();
+
+                                //don't need the self mention
+                                if (clust.equals(clust2))
+                                    continue;
+
+                                tmpans += clust2 + "|";
+                            }
+			    tmpans = tmpans.substring(0, tmpans.length() - 1) + ")";
+			    ans.append(tmpans);
+			    ans.append(System.lineSeparator());
+                        }
+			mapResults.add(new Tuple2<>(
+				new Tuple2<>(func, index),
+				ans.toString()));
+                    }
+                } //end of func enumeration
+            } //end of sentences within a partition
+            return mapResults.iterator();
+        })
+        .repartitionAndSortWithinPartitions(partitioner, comparator)
+        .map(pair -> pair._2())
+        .saveAsTextFile(_args.output);
 
         spark.stop();
 
