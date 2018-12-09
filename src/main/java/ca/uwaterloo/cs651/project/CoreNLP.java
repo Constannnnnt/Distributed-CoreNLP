@@ -181,9 +181,10 @@ public class CoreNLP {
 
                         Long index = pair._2();
                         String line = pair._1();
-                        String[] blocks = line.split(": ");
-                        String postId = blocks[0].substring(2, blocks[0].length() - 1);
-                        String post = blocks[1].substring(1, blocks[1].length() - 2);
+                        // String[] blocks = line.split("': '");
+                        // String postId = blocks[0].substring(2, blocks[0].length());
+                        // String post = blocks[1].substring(0, blocks[1].length() - 2);
+			String post = line;
                         CoreDocument doc = new CoreDocument(post);
                         Annotation anno = new Annotation(post);
                         pipeline.annotate(doc);
@@ -194,6 +195,7 @@ public class CoreNLP {
                                 String ans = "";
                                 for (CoreLabel token : anno.get(CoreAnnotations.TokensAnnotation.class))
                                     ans += token.word() + " ";
+				if (ans.length() == 0) continue;
                                 mapResults.add(new Tuple2<>(
                                         new Tuple2<>(func, index),
                                         ans.substring(0, ans.length() - 1)));
@@ -201,6 +203,7 @@ public class CoreNLP {
                                 String ans = "";
                                 for (CoreLabel word : anno.get(CoreAnnotations.TokensAnnotation.class))
                                     ans += word.toString() + " ";
+				if (ans.length() == 0) continue;
                                 mapResults.add(new Tuple2<>(
                                         new Tuple2<>(func, index),
                                         ans.substring(0, ans.length() - 1)));

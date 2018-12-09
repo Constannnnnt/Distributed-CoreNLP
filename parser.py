@@ -26,7 +26,7 @@ def collectResults(ret_cnt):
     outfile.write(str(ret_cnt[0])+"\n")
 
 def genPosts(post, cnt):
-    ret = {}
+    # ret = {}
     sentence = HTMLTextExtractor()
     if "contents" in post:
         for block in post["contents"]:
@@ -36,8 +36,8 @@ def genPosts(post, cnt):
     paragraph = sentence.get_text()
     paragraph = unicodedata.normalize("NFKD",paragraph)
     paragraph = paragraph.replace("\n", "")
-    ret[post["id"]] = paragraph
-    return [ret, cnt]
+    # ret[post["id"]] = paragraph
+    return [paragraph, cnt]
 
 if __name__ == "__main__":
     pool = multiprocessing.Pool(multiprocessing.cpu_count() + 2)
