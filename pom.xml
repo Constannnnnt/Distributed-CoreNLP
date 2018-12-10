@@ -37,29 +37,35 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>ca.uwaterloo.cs651.project.Simple</mainClass>
-                </transformer>
-              </transformers>
-              <relocations>
-                <relocation>
-                  <pattern>com.google.protobuf</pattern>
-                  <shadedPattern>shaded.com.google.protobuf</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
+          <artifactId>maven-shade-plugin</artifactId>
+            <version>3.1.0</version>
+              <executions>
+                <execution>
+                  <phase>package</phase>
+                    <goals>
+                      <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                      <createDependencyReducedPom>false</createDependencyReducedPom>
+<!--
+This is an Mac OSX issue because the default filesystem is case-insensitive,
+so multiple versions of files (w/ different cases) clash when Hadoop tries to unpack the jar.
+-->
+                      <filters>
+                        <filter>
+                          <artifact>*:*</artifact>
+                            <excludes>
+                              <exclude>META-INF/*.SF</exclude>
+                              <exclude>META-INF/*.DSA</exclude>
+                              <exclude>META-INF/*.RSA</exclude>
+                              <exclude>META-INF/LICENSE*</exclude>
+                              <exclude>license/*</exclude>
+                            </excludes>
+                       </filter>
+                     </filters>
+                   </configuration>
+               </execution>
+             </executions>
       </plugin>
 
       <plugin>
