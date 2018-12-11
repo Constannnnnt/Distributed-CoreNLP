@@ -365,6 +365,9 @@ public class CoreNLPMapReduce extends Configured implements Tool {
     job.getConfiguration().set("func", args.func);
 
     // job.setNumMapTasks(args.numMappers);
+    job.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 4);
+    job.getConfiguration().set("mapreduce.map.memory.mb", "11264");
+    job.getConfiguration().set("mapreduce.map.java.opts", "-Xmx11264m");
     job.setNumReduceTasks(0);
 
     FileInputFormat.setInputPaths(job, new Path(args.input));
