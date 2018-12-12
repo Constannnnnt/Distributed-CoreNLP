@@ -15,6 +15,8 @@ import edu.stanford.nlp.coref.data.CorefChain;
 import edu.stanford.nlp.coref.data.CorefChain.CorefMention;
 import edu.stanford.nlp.naturalli.NaturalLogicAnnotations;
 import edu.stanford.nlp.ie.util.RelationTriple;
+import edu.stanford.nlp.ie.machinereading.structure.MachineReadingAnnotations;
+import edu.stanford.nlp.ie.machinereading.structure.RelationMention;
 
 import org.apache.spark.api.java.*;
 import org.apache.spark.sql.SparkSession;
@@ -353,7 +355,23 @@ public class CoreNLP {
                                 mapResults.add(new Tuple2<>(
                                         new Tuple2<>(func, index),
                                         ans.toString()));
-                            } 
+                            } else if (func.equalsIgnoreCase("relation")) {
+                                StringBuilder ans = new StringBuilder();
+                    		for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                        	    List<RelationMention> relations = sentence.get(MachineReadingAnnotations.RelationMentionsAnnotation.class);
+                                for (RelationMention i : relations) {
+                            	    String relationType = i.getType();
+                            	    String entity1 = i.getEntityMentionArgs().get(0).getValue();
+                                    String entity2 = i.getEntityMentionArgs().get(1).getValue();
+                                    // ans += "(" + entity1 + "," + relationType + "," + entity2 + ")" + " ";
+				    ans.append("(" + entity1 + "," + relationType + "," + entity2 + ")");
+				    ans.append(System.lineSeparator());
+                                }
+                                }
+                    	    	mapResults.add(new Tuple2<>(
+                            		new Tuple2<>(func, index),
+                            		ans.toString()));
+                	    } 
 			   /* else if (func.equalsIgnoreCase("quote")) {
                     		String ans = doc.quotes().stream().map(quote -> "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
 				if (ans.length() < 1) continue;

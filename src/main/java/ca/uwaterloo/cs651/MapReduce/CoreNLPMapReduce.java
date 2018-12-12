@@ -315,7 +315,29 @@ public class CoreNLPMapReduce extends Configured implements Tool {
                 FUNCIDX.set(func, k);
                 ANS.set(ans.toString());
                 context.write(FUNCIDX, ANS);
-            }
+            } else if (func.equalsIgnoreCase("relation")) {
+                StringBuilder ans = new StringBuilder();
+                for (CoreMap sentence : anno.get(CoreAnnotations.SentencesAnnotation.class)) {
+                    List<RelationMention> relations = sentence.get(MachineReadingAnnotations.RelationMentionsAnnotation.class);
+                    for (RelationMention i : relations) {
+                        String relationType = i.getType();
+                        String entity1 = i.getEntityMentionArgs().get(0).getValue();
+                        String entity2 = i.getEntityMentionArgs().get(1).getValue();
+                        // ans += "(" + entity1 + "," + relationType + "," + entity2 + ")" + " ";
+                        ans.append("(" + entity1 + "," + relationType + "," + entity2 + ")");
+                        ans.append(System.lineSeparator());
+                    }
+                }
+                FUNCIDX.set(func, k);
+                ANS.set(ans.toString());
+                context.write(FUNCIDX, ANS);
+            } /* else if (func.equalsIgnoreCase("quote")) {
+                String ans = doc.quotes().stream().map(quote -> "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
+                if (ans.length() < 1) continue;
+                FUNCIDX.set(func, k);
+                ANS.set(ans);
+                context.write(FUNCIDX, ANS);
+            }*/
         }
     }
   }
