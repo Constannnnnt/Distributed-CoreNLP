@@ -216,27 +216,6 @@ public class CoreNLP {
                                 }
                                 mapResults.add(new Tuple2<>(
                                         new Tuple2<>(func, index), ans.toString()));
-                    /*} else if (func.equalsIgnoreCase("pos")) {
-                        String ans = " ";
-                        for (CoreLabel token: doc.tokens())
-                            ans += token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + " ";
-                        mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length()-1)));
-                    } else if (func.equalsIgnoreCase("lemma")) {
-                        String ans = "";
-                        for (CoreLabel token: doc.tokens())
-                            ans += token.get(CoreAnnotations.LemmaAnnotation.class) + " ";
-                        mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length()-1)));
-                    } else if (func.equalsIgnoreCase("ner")) {
-                        String ans = "";
-                        for (CoreLabel token: doc.tokens())
-                            ans += token.ner() + " ";
-                        mapResults.add(new Tuple2<>(
-                                new Tuple2<>(func, index),
-                                ans.substring(0, ans.length()-1)));*/
                             } else if (func.equalsIgnoreCase("pos")) {
                                 String ans = doc.tokens().stream().map(token ->
                                         token.get(CoreAnnotations.PartOfSpeechAnnotation.class))
@@ -374,7 +353,14 @@ public class CoreNLP {
                                 mapResults.add(new Tuple2<>(
                                         new Tuple2<>(func, index),
                                         ans.toString()));
-                            }
+                            } 
+			   /* else if (func.equalsIgnoreCase("quote")) {
+                    		String ans = doc.quotes().stream().map(quote -> "(" + quote.text() + "," + quote.speaker().get() + ")").collect(Collectors.joining(" "));
+				if (ans.length() < 1) continue;
+				mapResults.add(new Tuple2<>(
+					new Tuple2<>(func, index),
+					ans.substring(0, ans.length() - 1)));
+                    	    }*/
                         } //end of func enumeration
                     } //end of sentences within a partition
                     return mapResults.iterator();
