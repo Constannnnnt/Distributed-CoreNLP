@@ -27,16 +27,8 @@ target/
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-.idea/.name
-.idea/compiler.xml
-.idea/encodings.xml
-.idea/misc.xml
-.idea/scala_compiler.xml
-.idea/vcs.xml
-.idea/workspace.xml
-.idea/hydra.xml
-.idea/hydra.xml
-
+.idea/
+project.iml
 output*
 *.sh
 *data
